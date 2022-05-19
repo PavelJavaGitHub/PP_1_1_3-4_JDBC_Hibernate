@@ -61,6 +61,6 @@ public class User {
     }
 
     public String toString() {
-        return id + " " + name + " " + lastName + " " + age;
+        return "id:" + id + " name:" + name + " lastName:" + lastName + " age:" + age;
     }
 }

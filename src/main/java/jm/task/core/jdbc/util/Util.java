@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Util {
-    public static Connection getMySQLConnection() throws SQLException, ClassNotFoundException {
+    public static Connection getMySQLConnection() throws SQLException {
 
         String hostName = "localhost";
         String dbName = "mysql";
