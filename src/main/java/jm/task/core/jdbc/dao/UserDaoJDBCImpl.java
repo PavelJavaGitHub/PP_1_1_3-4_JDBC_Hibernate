@@ -8,26 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    private Connection conn;
     public UserDaoJDBCImpl() {
-        try {
-            conn = Util.getMySQLConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+
     }
 
     public void createUsersTable() {
-        try {
+
+        try (Connection conn = Util.getMySQLConnection()) {
+
             String sql = "CREATE TABLE IF NOT EXISTS User (" +
                     "id BIGINT(255) AUTO_INCREMENT PRIMARY KEY," +
                     "name VARCHAR(32)," +
                     "lastName VARCHAR(32)," +
                     "age TINYINT(8))";
 
-            Statement statement = conn.createStatement();
-            statement.executeUpdate(sql);
-
+            try (Statement statement = conn.createStatement()) {
+                statement.executeUpdate(sql);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -35,61 +32,60 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void dropUsersTable() {
 
-        try {
+        try (Connection conn = Util.getMySQLConnection()) {
             String sql = "DROP TABLE IF EXISTS User";
-            Statement statement = conn.createStatement();
-            statement.executeUpdate(sql);
+            try (Statement statement = conn.createStatement()) {
+                statement.executeUpdate(sql);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void saveUser(String name, String lastName, byte age) throws SQLException {
-        try {
-            conn.setAutoCommit(false);
+        Connection conn = Util.getMySQLConnection();
+        conn.setAutoCommit(false);
+        String sql = "INSERT INTO User (name, lastName, age) VALUES (?, ?, ?)";
 
-            String sql = "INSERT INTO User (name, lastName, age) VALUES (?, ?, ?)";
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
 
-            PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, name);
             statement.setString(2, lastName);
             statement.setByte(3, age);
             statement.executeUpdate();
-
             System.out.println("User с именем – " + name + " добавлен в базу данных");
 
             conn.commit();
-
         } catch (SQLException e) {
             e.printStackTrace();
             conn.rollback();
         }
+        conn.close();
     }
 
     public void removeUserById(long id) throws SQLException {
-        try {
-            conn.setAutoCommit(false);
+        Connection conn = Util.getMySQLConnection();
+        conn.setAutoCommit(false);
+        String sql = "DELETE FROM User WHERE id=?";
 
-            String sql = "DELETE FROM User WHERE id=?";
-            PreparedStatement statement = conn.prepareStatement(sql);
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setLong(1, id);
             statement.executeUpdate();
-
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             conn.rollback();
         }
+        conn.close();
     }
 
     public List<User> getAllUsers() throws SQLException {
+        Connection conn = Util.getMySQLConnection();
         List<User> list = new ArrayList<>();
+        conn.setAutoCommit(false);
+        String sql = "SELECT id, name, lastName, age FROM User";
 
-        try {
-            conn.setAutoCommit(false);
-
-            String sql = "SELECT id, name, lastName, age FROM User";
-            Statement statement = conn.createStatement();
+        try (Statement statement = conn.createStatement()) {
             ResultSet rs = statement.executeQuery(sql);
 
             while (rs.next()) {
@@ -106,21 +102,23 @@ public class UserDaoJDBCImpl implements UserDao {
             e.printStackTrace();
             conn.rollback();
         }
+        conn.close();
 
         return list;
     }
 
     public void cleanUsersTable() throws SQLException {
-        try {
-            conn.setAutoCommit(false);
-            String sql = "DELETE FROM User";
-            Statement statement = conn.createStatement();
-            statement.executeUpdate(sql);
+        Connection conn = Util.getMySQLConnection();
+        conn.setAutoCommit(false);
+        String sql = "DELETE FROM User";
 
+        try (Statement statement = conn.createStatement()) {
+            statement.executeUpdate(sql);
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             conn.rollback();
         }
+        conn.close();
     }
 }
