@@ -7,9 +7,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+//import javax.persistence.criteria.CriteriaBuilder;
+//import javax.persistence.criteria.CriteriaQuery;
+//import javax.persistence.criteria.Root;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
@@ -60,7 +60,6 @@ public class UserDaoHibernateImpl implements UserDao {
                 e.printStackTrace();
             }
         }
-
     }
 
     @Override
@@ -69,16 +68,13 @@ public class UserDaoHibernateImpl implements UserDao {
         try (Session session = sessionFactory.openSession()) {
             try {
                 session.beginTransaction();
-
                 session.save(new User(name, lastName, age));
-
                 session.getTransaction().commit();
             } catch (HibernateException e) {
                 session.getTransaction().rollback();
                 e.printStackTrace();
             }
         }
-
     }
 
     @Override
@@ -87,43 +83,28 @@ public class UserDaoHibernateImpl implements UserDao {
         try (Session session = sessionFactory.openSession()) {
             try {
                 session.beginTransaction();
-
-                User user = session.get(User.class, id);
-                session.delete(user);
-
+                session.delete(session.get(User.class, id));
                 session.getTransaction().commit();
             } catch (HibernateException e) {
                 session.getTransaction().rollback();
                 e.printStackTrace();
             }
         }
-
     }
 
     @Override
     public List<User> getAllUsers() {
 
         try (Session session = sessionFactory.openSession()) {
-            try {
-                session.beginTransaction();
+//            CriteriaQuery<User> cq = session.getCriteriaBuilder().createQuery(User.class);
+//            cq.select(cq.from(User.class));
+//            return session.createQuery(cq).getResultList();
 
-                CriteriaBuilder cb = session.getCriteriaBuilder();
-                CriteriaQuery<User> cq = cb.createQuery(User.class);
-                Root<User> root = cq.from(User.class);
+            String sql = "SELECT * FROM User";
+            Query query = session.createSQLQuery(sql).addEntity(User.class);
 
-                Query query = session.createQuery(cq);
-                List<User> userList = query.getResultList();
-
-                session.getTransaction().commit();
-                return userList;
-            } catch (HibernateException e) {
-                session.getTransaction().rollback();
-                e.printStackTrace();
-                return null;
-            }
+            return query.getResultList();
         }
-
-
     }
 
     @Override
